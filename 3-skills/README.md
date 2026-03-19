@@ -1,18 +1,20 @@
 # Skills
 
-1. Demonstrate `/skills` to list available skills
-2. Then move to `data-analyst` tab to show how available skills differ
-3. Show `ingest/SKILL.md` skill in another tab
+1. Demonstrate `/skills` to list available skills in `data-analyst`
+2. Run `/setup` skill
+3. Show `ingest/SKILL.md` skill works via prompt
 4. Demonstrate how to use the skill (ask vs. slash)
 
 ## Data Analyst
 
 ```shell
 data-analyst
+|- setup
 |- ingest
 |- analyze
-|- geocode
+|- geo
 |- match
+|- notebook
 ```
 
 ## Bonus

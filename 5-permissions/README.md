@@ -9,8 +9,8 @@
 
 1. Demonstrate `/permissions` use to allow `WebFetch(domain:api.census.gov)`
 2. Show the update to `settings.local.json`
-3. Use the `/ingest` skill to fetch ACS data
-4. Demonstrate that "Accept Always" updates `settings.local.json` (ask to checkout `main`)
+3. Show it works by asking to show the API endpoints for ACS data
+4. Demonstrate that "Accept Always" updates `settings.local.json`—just show the updates from accepting web fetches earlier
 
 ## Permissions Mode
 
@@ -19,8 +19,9 @@
 
 ## Deny
 
-1. Flip it - add a deny rule:
+1. Flip it - add a deny rule with `/permissions`: `Bash(rm *.txt)`
 2. Ask Claude to delete `test.txt`: it should refuse.
+3. Go back to `/permissions` and delete the rule.
 
 ```json
 {
