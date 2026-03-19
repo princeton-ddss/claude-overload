@@ -7,5 +7,5 @@
 5. Use the plugin to build a predictive model (push to background?):
 
 ```shell
-/ralph-loop:ralph-loop "Build a predictive model of county-level election Democratic vote share using ACS variables. Requirements: train-validate-test split. Hold-out R-squared above 75%. Output <promise>COMPLETE</promise> when done." --completion-promise "COMPLETE" --max-iterations 5
+/ralph-loop:ralph-loop "Build a predictive model of county-level election Republican vote share using ACS variables. Requirements: train-validate-test split. Hold-out R-squared above 75%. Only use linear regression methods. Output <promise>COMPLETE<promise> when done." --completion-promise "COMPLETE" --max-iterations 5
 ```
