@@ -7,3 +7,4 @@
 6. Ask Claude to make a brach, etc.
 7. Show !
 8. Show @
+9. Show /clear, /compact, and /context
