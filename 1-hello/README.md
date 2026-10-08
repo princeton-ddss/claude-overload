@@ -1,6 +1,58 @@
 # Hello, Claude
 
-## 1. Clone `data-analyst
+## 1. Install the prerequisites
+
+This workshop is hands-on, so there are a few things to install before we start. If you are following along live, do this now — the demos in later modules assume all of it.
+
+**Claude Code.** The CLI itself. Follow the instructions at [code.claude.com/docs](https://code.claude.com/docs/en/setup) for your platform, then confirm it's on your path:
+
+```bash
+claude --version
+```
+
+You will also need an Anthropic account to sign in with. Run `claude` and follow the login prompt, or use `/login` from inside a session.
+
+**Git.** Used to clone the demo repo in the next section, and to create branches throughout. Most macOS and Linux machines already have it:
+
+```bash
+git --version
+```
+
+**uv.** An extremely fast Python package and project manager, from Astral. The `data-analyst` demo repo uses `uv` for everything: its `setup` skill builds the virtual environment with `uv venv`, its permissions allow commands like `Bash(uv run python scripts/*)`, and its notebooks declare dependencies inline for `uv` to resolve. Without it, the very first demo fails.
+
+```bash
+# macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# or, with Homebrew
+brew install uv
+```
+
+```powershell
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Confirm it worked, and note that you do *not* need to install Python separately — `uv` will fetch an appropriate interpreter when it builds the environment:
+
+```bash
+uv --version
+```
+
+**jq.** A command-line JSON processor. We don't use it directly for analysis, but the hook we examine in module 6 pipes Claude's tool-call data through `jq` to write `logs/skills.log`, and the same module inspects session transcripts with it.
+
+```bash
+# macOS
+brew install jq
+
+# Debian/Ubuntu
+sudo apt install jq
+```
+
+> [!TIP]
+> If you're short on time or on a locked-down machine, install Claude Code and `git` and follow along for the rest. Every module can be *watched* without the full toolchain; only the Python demos in modules 3, 6, and 7 need `uv`, and only the hook demo needs `jq`.
+
+## 2. Clone `data-analyst
 
 We'll be demonstrating Claude Code features by working with a demo repo,  `data-analyst`, built for this purpose. Go ahead and clone the repo:
 
@@ -8,7 +60,7 @@ We'll be demonstrating Claude Code features by working with a demo repo,  `data-
 git clone https://github.com/princeton-ddss/data-analyst
 ```
 
-## 2. Start Claude Code
+## 3. Start Claude Code
 
 Many aspects of Claude Code's behavior are determined (in part) by the directory it is run from. Claude calls these "workspaces". Typically, they are a clone of a version controlled repo. Let's move into the `data-analyst` clone and start Claude:
 
@@ -19,7 +71,7 @@ claude
 
 The first time you run `claude` in a workspace you are greeted with a prompt that checks to make sure you want to give Claude access to the directory's contents. In addition, if the project ships with permissions, the message will state the permitted actions. Agree to proceed.
 
-## 3. Configure Claude
+## 4. Configure Claude
 
 If this is your first time using Claude, it's worthwhile familiarizing yourself before diving in. The first thing to know about are **slash commands** (or just commands). Normally, typing into the prompt and pressing enter sends a message to Claude. Let's call this "prompting". Prompting is the vast majority of your interaction with Claude, but sometimes you need to interact with the Claude app itself, not prompt the model. 
 
@@ -55,7 +107,7 @@ The Settings menu is also where you will find information about the application'
 > - `/voice` - Enable voice mode.
 > - `/verify` - Verify a code change does what it is supposed to.
 
-## 4. Explore .claude
+## 5. Explore .claude
 
 `data-analyst` is an example repo that is designed as a shareable Claude agent. Essentially, it bundles a collection of code and Claude data designed to help a researcher perform data analysis tasks. Let's take a quick look at its contents:
 
@@ -113,7 +165,7 @@ We'll further explore permissions and skills later. Right now, let's compare thi
 
 Claude applies configuration "inside-out", meaning that project-specific settings and skills take precedence over their global counterparts wherever conflict occurs. In the case of `CLAUDE.md`, project- and user-level prompts concatenate and therefore might deliver conflicting instructions.
 
-## 5. Prompt Claude
+## 6. Prompt Claude
 
 Now that we have a basic understanding of the layout, it's time to actually interact with Claude. Let's start by asking Claude to create a new Git branch for us:
 
