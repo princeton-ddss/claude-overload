@@ -197,7 +197,7 @@ Tables in data/data.duckdb
 
 A few observations here are worth pausing on.
 
-First, **the raw file is kept.** `data/raw/mit_election_countypres_2000_2024.tab` is the file as it arrived from Harvard Dataverse, and the skill instructs Claude never to modify it: "Never modify raw files after saving — they are the source of truth."
+First, **the raw file is kept.** `data/raw/countypres_2000-2024.csv` is the file as it arrived from Harvard Dataverse, and the skill instructs Claude never to modify it: "Never modify raw files after saving — they are the source of truth."
 
 Second, **the cleaning logic became a script.** Claude wrote `scripts/fetch_countrypres.py` with a docstring naming the DOI and `scripts/clean_countrypres.py` with a docstring listing its cleaning decisions. 
 
@@ -379,7 +379,7 @@ For anything load-bearing — your deflator, your standard-error correction, you
    - The cleaning script should handle all subsets/years for this source
 ```
 
-The first run of a new source generates `scripts/clean_mit_election.py`; every subsequent run reuses it. The skill ratchets toward determinism on its own. Note also that the generated script lands in `scripts/`, under version control, where a collaborator or reviewer can read exactly what was done to the raw data.
+The first run of a new source generates `scripts/clean_countypres.py`; every subsequent run reuses it. The skill ratchets toward determinism on its own. Note also that the generated script lands in `scripts/`, under version control, where a collaborator or reviewer can read exactly what was done to the raw data.
 
 > [!NOTE]
 > Keep in mind that bundled scripts still have to clear the permission system. `data-analyst` allows `Bash(python scripts/*)` precisely so that the skills in this project can run their own code without prompting on every call. A skill that invokes a command the project doesn't permit will stall waiting for approval — which is a good reason to write the skill and its allow rules at the same time.

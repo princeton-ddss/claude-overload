@@ -129,13 +129,13 @@ Make it executable (`chmod +x .claude/hooks/guard-raw.sh`), and register it in `
 Now ask Claude to do perform a forbidden action:
 
 ```
-❯ Fix the county FIPS codes in data/raw/mit_election_countypres_2000_2024.tab.
+❯ Fix the county FIPS codes in data/raw/countypres_2000-2024.csv.
 
-⏺ Write(data/raw/mit_election_countypres_2000_2024.tab)
+⏺ Write(data/raw/countypres_2000-2024.csv)
   ⎿  Blocked by hook: data/raw/ is immutable. Clean into data/clean/ instead.
 
 ⏺ Right — raw files are the source of truth. The FIPS normalization belongs in
-  scripts/clean_mit_election.py, which already zero-pads to 5 digits...
+  scripts/clean_countypres.py...
 ```
 
 Notice the hook *explains itself*. Claude sees the message on `stderr` and uses it to choose a different approach. A hook that fails silently produces a confused agent retrying the same blocked action, so always say why.

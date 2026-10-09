@@ -108,10 +108,10 @@ Add an allow rule for the read-only tools you use constantly, and leave the writ
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_slack_slack__search_messages"
+      "mcp__plugin_slack_slack__slack_search_public"
     ],
     "ask": [
-      "mcp__plugin_slack_slack__send_message"
+      "mcp__plugin_slack_slack__slack_send_message"
     ]
   }
 }
