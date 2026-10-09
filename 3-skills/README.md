@@ -1,51 +1,67 @@
 # Skills
 
-## 1. Understand the context ladder
+Everything Claude knows about your project arrives through its *context*: that finite budget of tokens that holds the conversation, the files it has read, and the instructions it has been given. Context is the scarce resource in agentic coding. Every feature we'll see in this workshop relates to context one way or another.
 
-Everything Claude knows about your project arrives through its *context*: a finite budget of tokens that holds the conversation, the files it has read, and the instructions it has been given. Context is the scarce resource in agentic coding, and nearly every feature we'll see in this workshop is a strategy for spending it well. It helps to think of a ladder:
+| Mechanism | Load Strategy | Context Cost |
+|---|:--|:--|
+| `CLAUDE.md` | Startup | Full text |
+| Memory | Just-in-time | Index entries + loaded bodies |
+| **Skills** | Just-in-time | Index entries + loaded bodies |
+| Subagents | Just-in-time, in a *fresh* session | Summaries + loaded body in new session |
 
-| Mechanism | When it loads | What it costs you |
-|---|---|---|
-| `CLAUDE.md` | Every single request | Permanent context |
-| Memory | When Claude judges a memory relevant | A one-line index entry |
-| **Skills** | Body loads when the task calls for it | ~100 words, always; the body only when used |
-| Subagents | On delegation, in a *fresh* window | Nothing but a summary |
+As we saw earlier, `CLAUDE.md` is loaded on every request, so it should be short and sweet. That constraint creates an obvious problem: how do we provide Claude with the instructions needed to perform complex procedures that are, by necessity, *not* short?
 
-Module 2 covered the first two rungs and the warning that came with them: `CLAUDE.md` is loaded on every request, so it must be short, and long or rambling files "cost tokens and dilute context". That constraint is real, and it creates an obvious problem. The instructions for correctly ingesting a dataset, or for writing a Marimo notebook that passes the linter, are *not* short. They run to hundreds of lines. They cannot live in `CLAUDE.md`.
+Skills provide an answer. A skill is a folder containing a Markdown file of instructions whose **body** Claude loads only when the task at hand calls for it. More precisely, skills load at three levels:
 
-Skills are the answer. A skill is a folder containing a Markdown file of instructions whose **body** Claude loads only when the task at hand calls for it. Precisely, skills load in three levels:
+1. **Metadata** — the skill's name and description, roughly 100 words. *Always* in context for every installed skill.
+2. **Body** — the rest of `SKILL.md`. Loaded when the skill triggers.
+3. **Resources** — reference files and scripts. Loaded, or executed, as needed.
 
-1. **Metadata** — the skill's name and description, roughly 100 words. This is *always* in context, for every installed skill, because it's what Claude uses to decide whether the skill is relevant.
-2. **The body** — the rest of `SKILL.md`. Loaded whenever the skill triggers.
-3. **Bundled resources** — reference files and scripts. Loaded, or executed, only as needed.
+Note that every skill installed maintains a small permanent footprint whether you use it or not. While the footprint may be small in terms of token usage, a session with forty installed skills pays a real tax before you type anything. On the other hand, because the body costs nothing until invoked, skills can afford to be exhaustive. Skills are complete protocols, not terse summaries.
 
-Level 1 is the part worth internalizing: a skill is not free. Every skill you install occupies a permanent hundred words whether you ever use it or not, which is why a machine with forty installed skills pays a real tax before you type anything. We'll measure that directly in section 11.
-
-But levels 2 and 3 invert the economics of everything else. Because the *body* costs nothing until invoked, it can afford to be exhaustive. You are no longer writing a terse summary and hoping Claude infers the rest — you are writing the full protocol.
-
-> [!NOTE]
-> For researchers, this is the feature that matters most. A skill is a methods section that executes. It is the place where "how we clean this dataset in our lab" stops being tribal knowledge passed between graduate students and becomes a versioned, reviewable, shareable artifact that the agent actually follows.
-
-### When should I create a skill?
-
-Skills are to coding agents as functions are to code. Create a skill when you want a task performed consistently without repeating yourself. Unlike functions, skills do not guarantee exact execution. In compensation, skills do not require precisely shaped inputs. *Skills are not a replacement for code*. 
-
-## 2. List the available skills
+## 1. List skills
 
 Let's see what `data-analyst` ships with. Run the `/skills` command:
 
 ```
   Skills
+  29 skills · enter/space to cycle, / to search, t to sort, Esc to close
 
-  ❯ 1. analyze    Use when the user asks a question that can be answered with data.
-    2. geo        Use for spatial operations: spatial joins, geocoding, boundary…
-    3. ingest     Use when the user wants to add a new data source or ingest data.
-    4. match      Use when linking records across datasets.
-    5. notebook   Open a new or existing Marimo notebook for interactive analysis.
-    6. setup      Use at the start of a new project or when the virtual environment…
+  ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+  │ ⌕ Search skills…                                                                                                 │
+  ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+    ✔ anthropic-skills:deep-research   claude.ai sync · ~200 tok
+    ✔ anthropic-skills:skill-creator   claude.ai sync · ~120 tok
+    ✔ built-in-browser                 claude.ai sync · ~280 tok
+    ✔ chrome-browser                   claude.ai sync · ~260 tok
+    ✔ computer-use                     claude.ai sync · ~320 tok
+    ✔ docs                             claude.ai sync · ~340 tok
+    ✔ docx                             claude.ai sync · ~320 tok
+    ✔ google-workspace                 claude.ai sync · ~330 tok
+    ✔ import-memory                    claude.ai sync · ~60 tok
+    ✔ morning                          claude.ai sync · ~120 tok
+    ✔ pdf                              claude.ai sync · ~150 tok
+    ✔ pptx                             claude.ai sync · ~330 tok
+    ✔ xlsx                             claude.ai sync · ~320 tok
+    ✔ skill-creator:skill-creator      locked by plugin · plugin · ~120 tok
+    ✔ slack:block-kit                  locked by plugin · plugin · ~170 tok
+    ✔ slack:create-slack-app           locked by plugin · plugin · ~120 tok
+    ✔ slack:slack-api                  locked by plugin · plugin · ~170 tok
+    ✔ slack:slack-cli                  locked by plugin · plugin · ~120 tok
+    ✔ slack:slack-docs                 locked by plugin · plugin · ~90 tok
+    ✔ slack:slack-messaging            locked by plugin · plugin · ~120 tok
+    ✔ slack:slack-search               locked by plugin · plugin · ~130 tok
+    ✔ slack:test-slack-app             locked by plugin · plugin · ~160 tok
+    ✔ analyze                          project · ~80 tok
+    ✔ geo                              project · ~70 tok
+    ✔ ingest                           project · ~80 tok
+    ✔ match                            project · ~90 tok
+    ✔ notebook                         project · ~50 tok
+    ✔ setup                            project · ~80 tok
+  ❯ ✔ weekly-standup                   user · ~20 tok
 ```
 
-Six skills, and they map directly onto the stages of an empirical research project:
+The project defines six skills (the ones listing "project" as their source), which map onto prototypical stages of empirical research:
 
 ```shell
 data-analyst
@@ -57,11 +73,14 @@ data-analyst
 |- notebook    # interactive exploration in Marimo
 ```
 
-Notice that this list is itself a claim about how research gets done. Someone decided that "ingesting a source" and "matching two sources" are distinct operations with distinct protocols. That design decision is the interesting part of authoring skills; the file format is trivial by comparison.
+The rest of the skills shown are built-in skills ("claude.ai sync"), plugins ("locked by plugin"), and skills defined at the user level ("user"). Note that each skills also lists its token usage, which tends to be around 100-200 tokens.
 
-## 3. Read a skill
+> [!TIP]
+> /skill-doctor displays skills usage and context costs for every loaded skill, which you can use to identify skills that can be safely pruned.
 
-Skills are plain Markdown, so let's just read one. Open `.claude/skills/setup/SKILL.md`:
+## 2. Read a skill
+
+Skills are easily read Markdown files. Let's examine `.claude/skills/setup/SKILL.md`:
 
 ```markdown
 ---
@@ -82,20 +101,20 @@ Create a virtual environment and install packages for data analysis.
    ...
 ```
 
-Every skill has exactly two required parts.
+Every skill has two required parts.
 
-The **frontmatter** is the YAML block between the `---` fences. It carries a `name` (which must match the directory name) and a `description`. The description is the only part of the skill that Claude sees before deciding whether to use it, which makes it the most important two sentences in the file. We'll come back to this.
+The **frontmatter** is the YAML block between the `---` fences. It carries a `name` (which must match the directory name) and a `description`. The description is the only part of the skill that Claude sees before deciding whether to use it, and therefore critical.
 
-The **body** is everything after the frontmatter. It is ordinary Markdown, and it is loaded into context verbatim when the skill fires. There is no special syntax to learn — if you can write a good README, you can write a good skill. Headings, numbered steps, tables, and fenced code blocks all work, and Claude follows them closely.
+The **body** is everything after the frontmatter. It is ordinary Markdown that is loaded into context verbatim when the skill fires. There is no special syntax to learn — if you can write a README, you can write a skill. Headings, numbered steps, tables, and fenced code blocks all work, and Claude follows them closely.
 
 > [!TIP]
-> Write the body as instructions to a competent new lab member, not as documentation. "Never modify raw files after saving — they are the source of truth" is a good line in a skill. "The raw data directory contains the raw data" is not.
+> Write the body as instructions to a competent new lab member, not as documentation. "Never modify raw files after saving — they are the source of truth" is better than "The raw data directory contains the raw data".
 
-## 4. Invoke a skill
+## 3. Invoke a skill
 
-There are two ways to make a skill fire, and the difference matters.
+There are two ways to make a skill fire.
 
-**Ask for it.** In the vast majority of cases you simply describe what you want and Claude matches your request against the available descriptions. Let's set up the project:
+**Method 1 - Ask for it.** In the majority of cases, you simply describe what you want and Claude matches your request against the available descriptions. We can see how this works by asking Claude to set up the project:
 
 ```
 Set up the project environment.
@@ -134,7 +153,7 @@ Set up the project environment.
 
 Claude should invoke the `setup` skill, then begin working through its workflow — `uv venv`, the `uv pip install` block, the directory scaffold, and the verification step. You never named the skill. Claude matched "Set up the project environment" against `setup`'s description, which helpfully lists "Set up the project" as an example phrasing.
 
-**Name it.** Every skill is also available as a slash command, which skips the matching step entirely:
+**Method 2 - Name it.** Every skill is also available as a slash command, which skips the matching step entirely:
 
 ```
 /notebook turnout
@@ -145,115 +164,128 @@ Use the slash form when you know exactly which protocol you want, when you want 
 > [!NOTE]
 > Watch the output when a skill fires. Claude prints the skill invocation as a tool call, the same way it prints a `Bash` or `Read` call. If you asked for something and the skill you expected *didn't* appear in the transcript, Claude is improvising rather than following your protocol — which is exactly the failure mode skills exist to prevent. In module 6 we'll add a hook that logs every skill invocation to `logs/skills.log` so you get a durable record instead of having to watch for it.
 
-## 5. Run a real pipeline
+### Fetching Data
 
-`setup` built us an empty scaffold. Before we can do anything interesting we need data, and this is the point at which the demo repo's design becomes apparent: clone `data-analyst` and `data/`, `scripts/`, `results/`, and `notebooks/` are all **empty**. They are listed in `.gitignore`. The repository ships the *protocols* and none of the outputs.
-
-That is the correct way to distribute this kind of project, and it's worth saying why. A repo that ships a 40 MB parquet file lets a collaborator read your results. A repo that ships the pipeline that *produces* that parquet file lets them reproduce them. The data is downstream of the code; only the code needs to be versioned.
-
-So let's produce some. Ask Claude for the MIT Election Lab's county-level presidential returns:
+`setup` built us an empty scaffold. Before we can do anything interesting we need data, so let's fetch some! Ask Claude for the MIT Election Lab's county-level presidential returns:
 
 ```
 Ingest the MIT Election Lab county presidential returns, 2000 through 2024.
 ```
 
-Claude matches this to `ingest` and begins working through its five-step workflow. Expect something close to this:
+Claude matches this to `ingest` and begins working through its five-step workflow:
 
 ```bash
 ❯ Ingest the MIT Election Lab county presidential returns, 2000 through 2024.
 
 ⏺ Skill(ingest)
+  ⎿  Successfully loaded skill
 
-⏺ Read(data/sources.yaml)
-  ⎿  File does not exist
-
-⏺ Write(.tmp/fetch_mit_election.py)
-⏺ Bash(uv run python .tmp/fetch_mit_election.py)
-  ⎿  Downloaded 7.4 MB → data/raw/mit_election_countypres_2000_2024.tab
-
-⏺ Write(scripts/clean_mit_election.py)
-⏺ Bash(uv run python scripts/clean_mit_election.py)
-  ⎿  Rows: 94,099
-     Years: [2000, 2004, 2008, 2012, 2016, 2020, 2024]
-     States: 51
-     Written to data/clean/mit_election.parquet
-
-⏺ Write(.tmp/load_mit_election.py)
-⏺ Bash(uv run python .tmp/load_mit_election.py)
-  ⎿  Registered table 'mit_election' (94,099 rows, 12 columns)
-
-⏺ Write(data/sources.yaml)
-
-⏺ Ingested the MIT Election Lab returns: 94,099 county-candidate-year rows
-  covering 2000–2024 across 51 state-level jurisdictions, loaded as
-  `mit_election` in data/data.duckdb.
-```
-
-Four things in that transcript are worth pausing on, because together they are the argument for writing skills at all.
-
-**The raw file is kept.** `data/raw/mit_election_countypres_2000_2024.tab` is the file as it arrived from Harvard Dataverse, and the skill instructs Claude never to modify it: "Never modify raw files after saving — they are the source of truth." Every transformation happens downstream. When a number in your paper is questioned two years from now, this is the file you diff against.
-
-**The cleaning logic became a script, not a conversation.** Claude wrote `scripts/clean_mit_election.py` — a tracked file, in a tracked directory, with a docstring naming the DOI and listing its cleaning decisions. Read it:
-
-```python
-"""Clean MIT Election Lab county-level presidential returns.
-
-Source: Harvard Dataverse, doi:10.7910/DVN/VOQCHQ
-Raw file: data/raw/mit_election_countypres_2000_2024.tab (tab-separated)
-
-Cleaning steps:
-- Parse county_fips as zero-padded 5-digit string
-- Drop rows with missing FIPS (write-ins, overseas, etc.)
 ...
-"""
+
+⏺ I've fetched county-level presidential returns for 2000–2024 from the MIT Election Lab, cleaned them, and loaded them into DuckDB. National vote shares match the official results, for example 48.3% D / 49.8% R in 2024.
+
+Tables in data/data.duckdb
+
+┌───────────────────┬─────────────────────────────────────────────┬────────┐
+│       Table       │                 One row per                 │  Rows  │
+├───────────────────┼─────────────────────────────────────────────┼────────┤
+│ countypres_county │ year × county, using 2020 Census FIPS codes │ 21,783 │
+├───────────────────┼─────────────────────────────────────────────┼────────┤
+│ countypres        │ year × reporting unit × candidate           │ 76,653 │
+└───────────────────┴─────────────────────────────────────────────┴────────┘
 ```
 
-Note the third cleaning step. Dropping unmatched FIPS codes is a real analytical decision with real consequences for anything you compute downstream, and it is now written down in a reviewable file rather than buried in a chat transcript that nobody will ever scroll back through.
+A few observations here are worth pausing on.
 
-**The throwaway work went to `.tmp/`.** Fetching and loading are one-off operations, so they landed in `.tmp/` — which `.gitignore` excludes. Cleaning is the step that must be re-runnable and auditable, so it went to `scripts/`. The skill encodes that distinction; Claude would not have invented it.
+First, **the raw file is kept.** `data/raw/mit_election_countypres_2000_2024.tab` is the file as it arrived from Harvard Dataverse, and the skill instructs Claude never to modify it: "Never modify raw files after saving — they are the source of truth."
 
-**The source got registered.** `data/sources.yaml` now contains the provenance record:
+Second, **the cleaning logic became a script.** Claude wrote `scripts/fetch_countrypres.py` with a docstring naming the DOI and `scripts/clean_countrypres.py` with a docstring listing its cleaning decisions. 
+
+Third, **throwaway work went to `.tmp/`.** One-off operations Claude performed while figuring out how to fetch and clean the data aren't needed to reproduce results, so they landed in `.tmp/`, which `.gitignore` excludes.
+
+Finally, **the source was registered.** `data/sources.yaml` now contains the provenance record:
 
 ```yaml
-mit_election:
-  origin: https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/VOQCHQ
-  format: tab
-  key: [county_fips, year, candidate]
-  cleaning: scripts/clean_mit_election.py
+countypres:
+  description: MIT Election Data + Science Lab county presidential returns, 2000-2024 (Dataverse v20.0, file version 20260225)
+  origin: https://doi.org/10.7910/DVN/VOQCHQ (Harvard Dataverse API; guestbook response required)
+  format: csv
+  raw: [data/raw/countypres_2000-2024.csv, data/raw/countypres_codebook.md]
+  fetch: scripts/fetch_countypres.py
+  cleaning: scripts/clean_countypres.py
+  tables:
+    countypres:
+      key: [year, unit_id, candidate, party]
+      grain: year x reporting unit x candidate (includes AK districts and statewide write-in units)
+    countypres_county:
+      key: [year, fips]
+      grain: year x county, 2020 Census FIPS (excludes AK)
 ```
 
-That is a machine-readable citation: where it came from, how to join it, and what cleaned it. Downstream skills read this file — `analyze` step 2 checks `sources.yaml` to see what's available before doing anything else — so registering the source is what makes the rest of the project composable.
+That is a machine-readable citation: where it came from, how to join it, and what cleaned it. Downstream skills read this file to see what's available before doing anything else, so registering the source is what makes the rest of the project composable.
 
 > [!NOTE]
 > Claude will not reproduce this transcript exactly. It may name the scripts differently, fetch via a different route, or split the steps differently. That is expected: a skill constrains the *protocol*, not every keystroke. What should be identical every time is the shape — raw data preserved, cleaning in a tracked script, source registered.
 
-> [!TIP]
-> If you're presenting this live, run the ingest before the session and keep the output visible. The Dataverse download takes long enough to kill the room's momentum, and it's the one step here that depends on someone else's uptime.
-
-Now ingest the second source, because the interesting demos need two:
-
-```
-Add the Census ACS 5-year county data for 2012 through 2015.
-```
-
-Same skill, same five steps, and this time watch for two differences. `sources.yaml` already exists, so Claude reads it before deciding anything (step 1). And because this request spans four years, `ingest` tells Claude to fan out — "spawn general-purpose agents in parallel — one per source or API call" — then clean and load sequentially once the fetches land. One source, one cleaning script, four subsets: the skill is explicit that "Census ACS 5-Year is one source, not one source per year."
+Later parts of this demo require Census ACS 5-year county data. Try asking Claude for that data now.
 
 > [!NOTE]
-> The ACS pull wants a `CENSUS_API_KEY`. Copy `.env.example` to `.env` and add yours if you have one. If you don't, `ingest` handles it: "If a key is not set anywhere, proceed without it when the API allows unauthenticated access." The Census API tolerates modest unauthenticated use, which is enough for this demo. Notice also what the skill forbids — Claude must never `cat` the `.env` file or echo a key, and module 4's deny rules enforce that independently.
+> The ACS pull wants a `CENSUS_API_KEY`. Copy `.env.example` to `.env` and add yours if you have one. If you don't, `ingest` handles it: "If a key is not set anywhere, proceed without it when the API allows unauthenticated access." The Census API tolerates modest unauthenticated use, which is enough for this demo. Notice also that the skill forbids Claude to `cat` the `.env` file or echo a key, and module 4's deny rules enforce that independently.
 
-With both sources loaded, the rest of the workshop has something to work with: a question to answer here, the hook demo in module 6, and the predictive model in module 7. Try one now:
+## 4. Write a skill
 
+Now the fun part. Let's create a new skill.
+
+First, create a directory and Markdown file:
+
+```bash
+mkdir -p .claude/skills/describe
 ```
-How many counties are in the election dataset per year?
+
+Then write `.claude/skills/describe/SKILL.md`:
+
+```markdown
+---
+name: describe
+description: >
+  Use when the user asks for a summary of a dataset or variable, or for
+  descriptive statistics before a formal analysis.
+  Examples: "Summarize the election data", "What's in census_acs?",
+  "Give me descriptives for vote share".
+---
+
+# Describe
+
+Produce a descriptive summary of a dataset or variable.
+
+## Workflow
+
+1. **Locate the data**
+   - Check `data/sources.yaml` and `data/clean/` for what's available
+   - Query through DuckDB against `data/data.duckdb`
+
+2. **Summarize**
+   - Report N, missingness, and unit of analysis first
+   - Continuous variables: mean, SD, median, min, max
+   - Categorical variables: counts and proportions by level
+
+3. **Report**
+   - One table, with the sample size in the caption
+   - Flag any variable with more than 5% missingness
 ```
 
-## 6. Treat the description as the API
+Then ask Claude to summarize the election data, and watch whether your skill fires.
 
-Here is the single most common mistake in authoring skills: writing a brilliant body and a lazy description.
+> [!TIP]
+> When should you create a skill? Skills are to coding agents as functions are to code. Create a skill any time you want a task performed consistently without repeating yourself. Unlike functions, skills do not guarantee exact execution. In compensation, skills do not require precisely shaped inputs. *Skills are not a replacement for code*. 
 
-Claude's decision to use a skill is made entirely from the `description` field. The body might contain a perfect, battle-tested, 200-line ingestion protocol — but if the description reads "Data stuff", the skill will never fire, and you will conclude that skills don't work. The description is not a label. It is the trigger condition.
+### Skill Writing Tips
 
-Compare `ingest`:
+**Tip 1 - Descriptions are triggers, not labels**
+
+Claude's decision to use a skill is made entirely from the `description` field. The body might contain a perfect 200-line ingestion protocol, but if the description reads "Data stuff", the skill will never fire, and you will conclude that skills don't work.
+
+Consider `ingest`:
 
 ```yaml
 description: >
@@ -262,35 +294,24 @@ description: >
   Examples: "Add census data", "Set up the election results", "Ingest ACS 5-year data".
 ```
 
-Three things are happening in those four lines:
+A good description has three parts:
 
 1. **A trigger condition.** It starts with "Use when…", stating the circumstances in which the skill applies.
 2. **A one-line summary of the mechanism**, so Claude can tell this skill apart from its neighbors.
-3. **Example phrasings**, in the user's own words, not the author's vocabulary.
+3. **Example phrasings**, in the user's own words.
 
-That third element does most of the work. A researcher will say "add census data", not "execute the ingestion pipeline". Listing the phrasings you actually expect to type is the cheapest reliability improvement available to you.
-
-There is also a known asymmetry worth exploiting. Claude's current tendency is to **undertrigger** — to not reach for a skill in situations where it would have helped. Anthropic's own guidance for skill authors is therefore to make descriptions slightly *pushy*. Rather than:
-
-```yaml
-description: Builds a data ingestion pipeline.
-```
-
-write something that states the obligation:
+Claude's current tendency is towards **under-triggering** skills. Anthropic's own guidance for skill authors is therefore to make descriptions slightly *pushy*. For example (my emphasis):
 
 ```yaml
 description: >
   Builds a data ingestion pipeline. Use this skill whenever the user mentions
-  adding, fetching, downloading, or loading data, even if they don't say
-  "ingest" and even if they only ask for an analysis that would need new data.
+  adding, fetching, downloading, or loading data, **even if they don't say
+  "ingest" and even if they only ask for an analysis that would need new data**.
 ```
 
-The failure mode of an overly pushy description is a skill that fires when you didn't need it, which costs you some context and is immediately obvious. The failure mode of a timid one is a protocol that silently never runs — which is the error you won't notice until a number in your paper is wrong.
+Correcting an agent that reaches for a skill too often is harmless and easy to correct (just ask to not use the skill). A timid description results in a protocol that **silently** never runs — an error you won't notice until a number in your paper is wrong.
 
-> [!TIP]
-> If a skill isn't firing when you expect it to, resist the urge to rewrite the body. Rewrite the description, add the exact sentence you just typed to its list of examples, and make the trigger condition more insistent.
-
-## 7. Use progressive disclosure for large skills
+**Tip 2 - Use progressive disclosure for large skills**
 
 The context argument from section 1 has a second act. Skills are cheap *until invoked* — but once invoked, the whole body lands in context. A 700-line skill is still a 700-line bill, just one you only pay when it's relevant.
 
@@ -337,7 +358,7 @@ Note the distinction between `references/` and `scripts/`. A reference file cost
 > [!TIP]
 > Anthropic's guidance is to keep `SKILL.md` under about 500 lines. Past that, add a layer of hierarchy: move minority-case material into `references/`, keep the decision-making in `SKILL.md`, and leave clear pointers about when to read what. For reference files over ~300 lines, open them with a table of contents.
 
-## 8. Bundle code with a skill
+**Tip 3 - Bundle code with skills**
 
 A skill doesn't have to be only prose. Because it's just a directory, you can ship scripts alongside the instructions and have the skill tell Claude to run them.
 
@@ -363,57 +384,7 @@ The first run of a new source generates `scripts/clean_mit_election.py`; every s
 > [!NOTE]
 > Keep in mind that bundled scripts still have to clear the permission system. `data-analyst` allows `Bash(python scripts/*)` precisely so that the skills in this project can run their own code without prompting on every call. A skill that invokes a command the project doesn't permit will stall waiting for approval — which is a good reason to write the skill and its allow rules at the same time.
 
-## 9. Write your own
-
-Now the part that actually transfers to your work. Pick a task from your own research that you have explained to someone else more than once, and write a skill for it.
-
-Create the directory and the file:
-
-```bash
-mkdir -p .claude/skills/describe
-```
-
-Then write `.claude/skills/describe/SKILL.md`:
-
-```markdown
----
-name: describe
-description: >
-  Use when the user asks for a summary of a dataset or variable, or for
-  descriptive statistics before a formal analysis.
-  Examples: "Summarize the election data", "What's in census_acs?",
-  "Give me descriptives for vote share".
----
-
-# Describe
-
-Produce a descriptive summary of a dataset or variable.
-
-## Workflow
-
-1. **Locate the data**
-   - Check `data/sources.yaml` and `data/clean/` for what's available
-   - Query through DuckDB against `data/data.duckdb`
-
-2. **Summarize**
-   - Report N, missingness, and unit of analysis first
-   - Continuous variables: mean, SD, median, min, max
-   - Categorical variables: counts and proportions by level
-
-3. **Report**
-   - One table, with the sample size in the caption
-   - Flag any variable with more than 5% missingness
-```
-
-Then start a new session, ask "summarize the election data", and watch whether your skill fires. If it doesn't, you now know where to look — section 6.
-
-Three things to check as you write:
-
-1. **Does the description state a trigger condition and list real phrasings?** This is where skills fail.
-2. **Is the body specific enough to be falsifiable?** "Handle missing data appropriately" is not an instruction. "Flag any variable with more than 5% missingness" is.
-3. **Have you encoded a *decision*, not just a sequence?** The best skills in `data-analyst` tell Claude how to choose — `match` lays out four linkage strategies with a "use when" for each, and `analyze` carries a table mapping question types to methods. That judgment is the part Claude can't reconstruct from your directory layout, and it's the part worth writing down.
-
-## 10. Create, evaluate, and improve skills with skill-creator
+### /skill-creator
 
 Having written one by hand, you can now use the shortcut without being misled by it. Anthropic publishes a skill for writing skills, distributed as a plugin on the official marketplace. Install it with `/plugin` (we cover plugins properly in module 7), then invoke it:
 
