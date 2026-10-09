@@ -27,8 +27,8 @@
 
 ## 3. Use a server — read, then write ⭐
 
-- Prompt 💬 "What are the recent messages in #claude-overload?"
-- Prompt 💬 "Post a message to #claude-overload asking how the presentation is going."
+- Prompt 💬 "What are the recent messages in #claude-workshop?"
+- Prompt 💬 "Post a message to #claude-workshop asking how the presentation is going."
 
 ## 4. Permission a server
 
