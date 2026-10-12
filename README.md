@@ -18,6 +18,6 @@ Each module has a `README.md` for attendees and a `SCRIPT.md` for the presenter.
 
 **Workshop 2 — Teaching Claude your workflow**
 
-3. [Skills](3-skills/README.md) — protocols Claude loads on demand
-6. [Hooks](6-hooks/README.md) — deterministic enforcement and audit trails
-5. [Tools and MCP](5-mcp/README.md) — connecting external systems
+4. [Skills](3-skills/README.md) — protocols Claude loads on demand
+5. [Hooks](6-hooks/README.md) — deterministic enforcement and audit trails
+6. [Tools and MCP](5-mcp/README.md) — connecting external systems
